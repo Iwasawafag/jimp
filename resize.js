@@ -177,7 +177,7 @@ Resize.prototype.resizeWidthInterpolatedRGBA = function (buffer) {
     var secondWeight = 0;
     var outputBuffer = this.widthBuffer;
     //Handle for only one interpolation input being valid for start calculation:
-    for (var targetPosition = 0; weight < 1 / 3; targetPosition += 4, weight += ratioWeight) {
+    for (var targetPosition = 0; weight < 1 / 4; targetPosition += 4, weight += ratioWeight) {
         for (finalOffset = targetPosition, pixelOffset = 0; finalOffset < this.widthPassResultSize; pixelOffset += this.originalWidthMultipliedByChannels, finalOffset += this.targetWidthMultipliedByChannels) {
             outputBuffer[finalOffset] = buffer[pixelOffset];
             outputBuffer[finalOffset + 1] = buffer[pixelOffset + 1];
