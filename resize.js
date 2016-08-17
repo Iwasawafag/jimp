@@ -66,8 +66,9 @@ Resize.prototype._resizeWidthInterpolatedRGBChannels = function (buffer, fourthC
     var firstWeight = 0;
     var secondWeight = 0;
     var outputBuffer = this.widthBuffer;
+    var magicNumber = this.calcMagicOvershootCompensationValue(ratioWeight);
     //Handle for only one interpolation input being valid for start calculation:
-    for (var targetPosition = 0; weight < 1 / channelsNum; targetPosition += channelsNum, weight += ratioWeight) {
+    for (var targetPosition = 0; weight < magicNumber; targetPosition += channelsNum, weight += ratioWeight) {
         for (finalOffset = targetPosition, pixelOffset = 0; finalOffset < this.widthPassResultSize; pixelOffset += this.originalWidthMultipliedByChannels, finalOffset += this.targetWidthMultipliedByChannels) {
             outputBuffer[finalOffset] = buffer[pixelOffset];
             outputBuffer[finalOffset + 1] = buffer[pixelOffset + 1];
@@ -77,7 +78,7 @@ Resize.prototype._resizeWidthInterpolatedRGBChannels = function (buffer, fourthC
         }
     }
     //Adjust for overshoot of the last pass's counter:
-    weight -= 1 / 3;
+    weight -= magicNumber;
     for (var interpolationWidthSourceReadStop = this.widthOriginal - 1; weight < interpolationWidthSourceReadStop; targetPosition += channelsNum, weight += ratioWeight) {
         //Calculate weightings:
         secondWeight = weight % 1;
@@ -238,14 +239,15 @@ Resize.prototype.resizeHeightInterpolated = function (buffer) {
     var firstWeight = 0;
     var secondWeight = 0;
     var outputBuffer = this.heightBuffer;
+    var magicNumber = this.calcMagicOvershootCompensationValue(ratioWeight);
     //Handle for only one interpolation input being valid for start calculation:
-    for (; weight < 1 / 3; weight += ratioWeight) {
+    for (; weight < magicNumber; weight += ratioWeight) {
         for (pixelOffset = 0; pixelOffset < this.targetWidthMultipliedByChannels;) {
             outputBuffer[finalOffset++] = Math.round(buffer[pixelOffset++]);
         }
     }
     //Adjust for overshoot of the last pass's counter:
-    weight -= 1 / 3;
+    weight -= magicNumber;
     for (var interpolationHeightSourceReadStop = this.heightOriginal - 1; weight < interpolationHeightSourceReadStop; weight += ratioWeight) {
         //Calculate weightings:
         secondWeight = weight % 1;
@@ -315,6 +317,12 @@ Resize.prototype.generateUint8Buffer = function (bufferLength) {
     } catch (error) {
         return [];
     }
+}
+
+Resize.prototype.calcMagicOvershootCompensationValue = function (ratioWeight) {
+    //This value how image is shifted vertically/horizontally (larger is further)
+    //The closer original dimensions to target - the lower the value (originally was 1 / 3)
+    return 1 / (1.5 + 6 * ratioWeight);
 }
 
 module.exports = Resize;
